@@ -1,0 +1,503 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- edited with XMLSpy v2008 sp1 (http://www.altova.com) by ItsMe (EMBRACE) -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:sch="http://purl.oclc.org/dsdl/schematron" xmlns:usch="http://www.unisoftware.ru/schematron-extensions" xmlns:sql="urn:schemas-microsoft-com:mapping-schema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:element name="Файл">
+		<xs:annotation>
+			<!---**************************************************************************************************************************************************************************-->
+			<xs:appinfo>
+				<sch:pattern name="Проверка имени файла на соответствие значению атрибута @ИдФайл">
+					<sch:rule context="Файл">
+						<!--  1. Проверка имени файла на соответствие ИдФайл                                                                             -->
+						<sch:assert test="usch:getFileName() = @ИдФайл">
+							<usch:error code="0400400007" path="@ИдФайл" value-of-select="@ИдФайл" doc-id-path="usch:getFileName()" doc-id-caption="Файл">Имя файла обмена "<usch:value-of select="usch:getFileName()"/>" не совпадает со значением элемента ИдФайл "<usch:value-of select="@ИдФайл"/>"</usch:error>
+						</sch:assert>
+					</sch:rule>
+				</sch:pattern>
+			</xs:appinfo>
+			<!---**************************************************************************************************************************************************************************-->
+			<xs:documentation>Файл обмена</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="Документ">
+					<xs:annotation>
+						<!---*********************************************************************************************************************************************************-->
+						<xs:appinfo>
+							<sch:pattern name="Присутствие признака актуальности сведений">
+								<sch:rule context="Документ">
+									<!-- 2. Контроль  обязательности  присутствия  ПризнСвед8  в  зависимости  от  значения  НомКорр  -->
+									<sch:assert test="usch:iif( @НомКорр=0, count(@ПризнСвед8)=0, count(@ПризнСвед8)!=0 )">
+										<usch:error code="0400300003" path="@ПризнСвед8" value-of-select="@НомКорр"> Если "Номер корректировки" = "0", то строка 001 должна быть пустой. В противном случае строка 001 должна быть заполнена</usch:error>
+									</sch:assert>
+								</sch:rule>
+							</sch:pattern>
+						</xs:appinfo>
+						<!---*********************************************************************************************************************************************************-->
+						<!---*********************************************************************************************************************************************************-->
+						<xs:appinfo>
+							<sch:pattern name="Присутствие КнигаПокуп в  зависимости  от  значения ПризнСвед8">
+								<sch:rule context="Документ">
+									<!-- 3. Контроль  обязательности  присутствия  КнигаПокуп в  зависимости  от  значения ПризнСвед8  -->
+									<sch:assert test="(count(@ПризнСвед8)!=0 and @ПризнСвед8=0 and count(КнигаПокуп)!=0) or (count(@ПризнСвед8)!=0 and @ПризнСвед8=1 and count(КнигаПокуп)=0) or (count(@ПризнСвед8)=0 and (count(КнигаПокуп)=0 or count(КнигаПокуп)!=0))">
+										<usch:error code="0400300003" path="КнигаПокуп" value-of-select="count(КнигаПокуп)">
+											Должно выполняться одно из следующих условий: <br/>
+											1. "Строка 001" = 0 и листы из книги покупок должны присутствовать <br/>
+											2. "Строка 001" = 1 и листы из книги покупок должны отсутствовать <br/>
+											3. "Строка 001" должна быть пустой
+										</usch:error>
+									</sch:assert>
+								</sch:rule>
+							</sch:pattern>
+						</xs:appinfo>
+						<!---*********************************************************************************************************************************************************-->
+						<xs:documentation>Лист 1</xs:documentation>
+						<xs:documentation>Состав и структура документа</xs:documentation>
+						<xs:documentation>part</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="КнигаПокуп" minOccurs="0">
+								<xs:annotation>
+									<xs:documentation/>
+									<xs:documentation>Сведения из книги покупок об операциях, отражаемых за истекший налоговый период</xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="КнПокСтр" maxOccurs="unbounded">
+											<xs:annotation>
+												<!---**********************************************************************************************************************************************-->
+												<xs:appinfo>
+													<sch:pattern name="Присутствие элементов">
+														<sch:rule context="КнПокСтр">
+															<!-- 4. Контроль  обязательности  присутствия  НомИспрСчФ в  зависимости  от наличия  ДатаИспрСчФ  -->
+															<sch:assert test="usch:iif(count(@ДатаИспрСчФ)!=0, count(@НомИспрСчФ)!=0, (count(@НомИспрСчФ)!=0 or count(@НомИспрСчФ)=0))">
+																<usch:error code="0400300001" path="@НомИспрСчФ" value-of-select="count(@НомИспрСчФ)"> Если заполнена строка 050, то должна быть заполнена строка 040 </usch:error>
+															</sch:assert>
+															<!-- 5. Контроль  обязательности  присутствия  ДатаИспрСчФ в  зависимости  от наличия  НомИспрСчФ  -->
+															<sch:assert test="usch:iif(count(@НомИспрСчФ)!=0, count(@ДатаИспрСчФ)!=0, (count(@ДатаИспрСчФ)!=0 or count(@ДатаИспрСчФ)=0))">
+																<usch:error code="0400300001" path="@ДатаИспрСчФ" value-of-select="count(@ДатаИспрСчФ)"> Если заполнена строка 040, то должна быть заполнена строка 050 </usch:error>
+															</sch:assert>
+															<!-- 6. Контроль  обязательности  присутствия  НомКСчФПрод в  зависимости  от наличия  ДатаКСчФПрод или НомИспрКСчФ или ДатаИспрКСчФ -->
+															<sch:assert test="usch:iif( count(@ДатаКСчФПрод)!=0 or count(@НомИспрКСчФ)!=0 or count(@ДатаИспрКСчФ)!=0 , count(@НомКСчФПрод)!=0, (count(@НомКСчФПрод)!=0 or count(@НомКСчФПрод)=0))">
+																<usch:error code="0400300001" path="@НомКСчФПрод" value-of-select="count(@НомКСчФПрод)"> Если заполнена хотя бы одна из строк 070 или 080 или 090, то должна быть заполнена строка 060 </usch:error>
+															</sch:assert>
+															<!-- 7. Контроль  обязательности  присутствия  ДатаКСчФПрод в  зависимости  от наличия  НомКСчФПрод или НомИспрКСчФ или ДатаИспрКСчФ -->
+															<sch:assert test="usch:iif(count(@НомКСчФПрод)!=0 or count(@НомИспрКСчФ)!=0 or count(@ДатаИспрКСчФ)!=0 , count(@ДатаКСчФПрод)!=0, (count(@ДатаКСчФПрод)!=0 or count(@ДатаКСчФПрод)=0))">
+																<usch:error code="0400300001" path="@ДатаКСчФПрод" value-of-select="count(@ДатаКСчФПрод)"> Если заполнена хотя бы одна из строк 060 или 080 или 090, то должна быть заполнена строка 070 </usch:error>
+															</sch:assert>
+															<!-- 8. Контроль  обязательности  присутствия  НомИспрКСчФ в  зависимости  от наличия  ДатаИспрКСчФ  -->
+															<sch:assert test="usch:iif(count(@ДатаИспрКСчФ)!=0, count(@НомИспрКСчФ)!=0, (count(@НомИспрКСчФ)!=0 or count(@НомИспрКСчФ)=0))">
+																<usch:error code="0400300001" path="@НомИспрКСчФ" value-of-select="count(@НомИспрКСчФ)"> Если заполнена строка 090, то должна быть заполнена строка 080</usch:error>
+															</sch:assert>
+															<!-- 9. Контроль  обязательности  присутствия  ДатаИспрКСчФ в  зависимости  от наличия  НомИспрКСчФ  -->
+															<sch:assert test="usch:iif(count(@НомИспрКСчФ)!=0, count(@ДатаИспрКСчФ)!=0, (count(@ДатаИспрКСчФ)!=0 or count(@ДатаИспрКСчФ)=0))">
+																<usch:error code="0400300001" path="@ДатаИспрКСчФ" value-of-select="count(@ДатаИспрКСчФ)"> Если заполнена строка 080, то должна быть заполнена строка 090 </usch:error>
+															</sch:assert>
+															<!-- 10. Контроль  обязательности  присутствия  СвПрод в зависимости  от значения КодВидОпер -->
+															<sch:assert test="usch:iif( КодВидОпер=01  or  КодВидОпер=02  or  КодВидОпер=13  or  КодВидОпер=15  or  КодВидОпер=16  or  КодВидОпер=17  or  КодВидОпер=18  or  КодВидОпер=22  or  КодВидОпер=24  or  КодВидОпер=25  or  КодВидОпер=26  or  КодВидОпер=27  or  КодВидОпер=28  or  КодВидОпер=32   , count(СвПрод)!=0, (count(СвПрод)!=0 or count(СвПрод)=0))">
+																<usch:error code="0400300001" path="СвПрод" value-of-select="count(КодВидОпер)"> Если строка 010 принимает одно из значений: 01, 02, 13, 15, 16, 17, 18, 22, 24, 25, 26, 27, 28, 32, то строка 130 должна быть заполнена </usch:error>
+															</sch:assert>
+														</sch:rule>
+													</sch:pattern>
+												</xs:appinfo>
+												<!---**********************************************************************************************************************************************-->
+												<xs:documentation>Лист 2</xs:documentation>
+												<xs:documentation>Сведения по строке из книги покупок об операциях, отражаемых за истекший налоговый период</xs:documentation>
+												<xs:documentation>part</xs:documentation>
+											</xs:annotation>
+											<xs:complexType>
+												<xs:sequence>
+													<xs:element name="КодВидОпер" maxOccurs="unbounded">
+														<xs:annotation>
+															<xs:documentation>строка 010</xs:documentation>
+															<xs:documentation>Код вида операции</xs:documentation>
+														</xs:annotation>
+														<xs:simpleType>
+															<xs:restriction base="xs:string">
+																<xs:length value="2"/>
+																<xs:enumeration value="01"/>
+																<xs:enumeration value="02"/>
+																<xs:enumeration value="06"/>
+																<xs:enumeration value="13"/>
+																<xs:enumeration value="15"/>
+																<xs:enumeration value="16"/>
+																<xs:enumeration value="17"/>
+																<xs:enumeration value="18"/>
+																<xs:enumeration value="19"/>
+																<xs:enumeration value="20"/>
+																<xs:enumeration value="22"/>
+																<xs:enumeration value="23"/>
+																<xs:enumeration value="24"/>
+																<xs:enumeration value="25"/>
+																<xs:enumeration value="26"/>
+																<xs:enumeration value="27"/>
+																<xs:enumeration value="28"/>
+																<xs:enumeration value="32"/>
+															</xs:restriction>
+														</xs:simpleType>
+													</xs:element>
+													<xs:element name="ДокПдтвУпл" minOccurs="0" maxOccurs="unbounded">
+														<xs:annotation>
+															<xs:documentation/>
+															<xs:documentation>Сведения о документе, подтверждающем уплату налога</xs:documentation>
+														</xs:annotation>
+														<xs:complexType>
+															<xs:attribute name="НомДокПдтвУпл" use="required">
+																<xs:annotation>
+																	<xs:documentation>строка 100</xs:documentation>
+																	<xs:documentation>Номер документа, подтверждающего уплату налога</xs:documentation>
+																</xs:annotation>
+																<xs:simpleType>
+																	<xs:restriction base="xs:string">
+																		<xs:minLength value="1"/>
+																		<xs:maxLength value="256"/>
+																	</xs:restriction>
+																</xs:simpleType>
+															</xs:attribute>
+															<xs:attribute name="ДатаДокПдтвУпл" type="ДатаТип" use="required">
+																<xs:annotation>
+																	<xs:documentation>строка 110</xs:documentation>
+																	<xs:documentation>Дата документа, подтверждающего уплату налога</xs:documentation>
+																	<xs:documentation>
+Дата в формате ДД.ММ.ГГГГ</xs:documentation>
+																</xs:annotation>
+															</xs:attribute>
+														</xs:complexType>
+													</xs:element>
+													<xs:element name="ДатаУчТов" type="ДатаТип" minOccurs="0" maxOccurs="unbounded">
+														<xs:annotation>
+															<xs:documentation>строка 120</xs:documentation>
+															<xs:documentation>Дата принятия на учет товаров (работ, услуг), имущественных прав</xs:documentation>
+														</xs:annotation>
+													</xs:element>
+													<xs:element name="СвПрод" type="СвУчСдТип" minOccurs="0" maxOccurs="unbounded">
+														<xs:annotation>
+															<xs:documentation>строка 130</xs:documentation>
+															<xs:documentation>Сведения о продавце</xs:documentation>
+														</xs:annotation>
+													</xs:element>
+													<xs:element name="СвПос" type="СвУчСдТип" minOccurs="0">
+														<xs:annotation>
+															<xs:documentation>строка 140</xs:documentation>
+															<xs:documentation>Сведения о посреднике (комиссионере, агенте, экспедиторе, застройщике)</xs:documentation>
+														</xs:annotation>
+													</xs:element>
+													<xs:element name="РегНомТД" minOccurs="0" maxOccurs="unbounded">
+														<xs:annotation>
+															<xs:documentation>строка 150</xs:documentation>
+															<xs:documentation>Регистрационный номер таможенной декларации</xs:documentation>
+														</xs:annotation>
+														<xs:simpleType>
+															<xs:restriction base="xs:string">
+																<xs:minLength value="23"/>
+																<xs:maxLength value="27"/>
+															</xs:restriction>
+														</xs:simpleType>
+													</xs:element>
+												</xs:sequence>
+												<xs:attribute name="НомерПор" use="required">
+													<xs:annotation>
+														<xs:documentation>строка 005</xs:documentation>
+														<xs:documentation>Порядковый номер</xs:documentation>
+													</xs:annotation>
+													<xs:simpleType>
+														<xs:restriction base="xs:integer">
+															<xs:totalDigits value="12"/>
+															<xs:minInclusive value="1"/>
+														</xs:restriction>
+													</xs:simpleType>
+												</xs:attribute>
+												<xs:attribute name="НомСчФПрод" use="required">
+													<xs:annotation>
+														<xs:documentation>строка 020</xs:documentation>
+														<xs:documentation>Номер счета-фактуры продавца</xs:documentation>
+													</xs:annotation>
+													<xs:simpleType>
+														<xs:restriction base="xs:string">
+															<xs:minLength value="1"/>
+															<xs:maxLength value="1000"/>
+														</xs:restriction>
+													</xs:simpleType>
+												</xs:attribute>
+												<xs:attribute name="ДатаСчФПрод" type="ДатаТип" use="optional">
+													<xs:annotation>
+														<xs:documentation>строка 030</xs:documentation>
+														<xs:documentation>Дата счета-фактуры продавца</xs:documentation>
+														<xs:documentation>
+Дата в формате ДД.ММ.ГГГГ</xs:documentation>
+													</xs:annotation>
+												</xs:attribute>
+												<xs:attribute name="НомИспрСчФ" use="optional">
+													<xs:annotation>
+														<xs:documentation>строка 040</xs:documentation>
+														<xs:documentation>Номер исправления счета-фактуры продавца</xs:documentation>
+													</xs:annotation>
+													<xs:simpleType>
+														<xs:restriction base="xs:integer">
+															<xs:totalDigits value="3"/>
+															<xs:minInclusive value="1"/>
+														</xs:restriction>
+													</xs:simpleType>
+												</xs:attribute>
+												<xs:attribute name="ДатаИспрСчФ" type="ДатаТип" use="optional">
+													<xs:annotation>
+														<xs:documentation>строка 050</xs:documentation>
+														<xs:documentation>Дата исправления счета-фактуры продавца</xs:documentation>
+														<xs:documentation>
+Дата в формате ДД.ММ.ГГГГ</xs:documentation>
+													</xs:annotation>
+												</xs:attribute>
+												<xs:attribute name="НомКСчФПрод" use="optional">
+													<xs:annotation>
+														<xs:documentation>строка 060</xs:documentation>
+														<xs:documentation>Номер корректировочного счета-фактуры продавца</xs:documentation>
+													</xs:annotation>
+													<xs:simpleType>
+														<xs:restriction base="xs:string">
+															<xs:minLength value="1"/>
+															<xs:maxLength value="256"/>
+														</xs:restriction>
+													</xs:simpleType>
+												</xs:attribute>
+												<xs:attribute name="ДатаКСчФПрод" type="ДатаТип" use="optional">
+													<xs:annotation>
+														<xs:documentation>строка 070</xs:documentation>
+														<xs:documentation>Дата корректировочного счета-фактуры продавца</xs:documentation>
+														<xs:documentation>
+Дата в формате ДД.ММ.ГГГГ</xs:documentation>
+													</xs:annotation>
+												</xs:attribute>
+												<xs:attribute name="НомИспрКСчФ" use="optional">
+													<xs:annotation>
+														<xs:documentation>строка 080</xs:documentation>
+														<xs:documentation>Номер исправления корректировочного счета-фактуры продавца</xs:documentation>
+													</xs:annotation>
+													<xs:simpleType>
+														<xs:restriction base="xs:integer">
+															<xs:totalDigits value="3"/>
+															<xs:minInclusive value="1"/>
+														</xs:restriction>
+													</xs:simpleType>
+												</xs:attribute>
+												<xs:attribute name="ДатаИспрКСчФ" type="ДатаТип" use="optional">
+													<xs:annotation>
+														<xs:documentation>строка 090</xs:documentation>
+														<xs:documentation>Дата исправления корректировочного счета-фактуры продавца</xs:documentation>
+														<xs:documentation>
+Дата в формате ДД.ММ.ГГГГ</xs:documentation>
+													</xs:annotation>
+												</xs:attribute>
+												<xs:attribute name="ОКВ" type="ОКВТип" use="optional">
+													<xs:annotation>
+														<xs:documentation>строка 160</xs:documentation>
+														<xs:documentation>Код валюты по ОКВ</xs:documentation>
+													</xs:annotation>
+												</xs:attribute>
+												<xs:attribute name="СтоимПокупВ" use="required">
+													<xs:annotation>
+														<xs:documentation>строка 170</xs:documentation>
+														<xs:documentation>Стоимость покупок по счету-фактуре, разница стоимости по корректировочному счету-фактуре (включая налог), в валюте счета-фактуры</xs:documentation>
+													</xs:annotation>
+													<xs:simpleType>
+														<xs:restriction base="xs:decimal">
+															<xs:totalDigits value="19"/>
+															<xs:fractionDigits value="2"/>
+														</xs:restriction>
+													</xs:simpleType>
+												</xs:attribute>
+												<xs:attribute name="СумНДСВыч" use="required">
+													<xs:annotation>
+														<xs:documentation>строка 180</xs:documentation>
+														<xs:documentation>Сумма налога по счету-фактуре, разница суммы налога по корректировочному счету-фактуре, принимаемая к вычету, в рублях и копейках</xs:documentation>
+													</xs:annotation>
+													<xs:simpleType>
+														<xs:restriction base="xs:decimal">
+															<xs:totalDigits value="19"/>
+															<xs:fractionDigits value="2"/>
+														</xs:restriction>
+													</xs:simpleType>
+												</xs:attribute>
+											</xs:complexType>
+										</xs:element>
+									</xs:sequence>
+									<xs:attribute name="СумНДСВсКПк" use="required">
+										<xs:annotation>
+											<xs:documentation>строка 190</xs:documentation>
+											<xs:documentation>Сумма налога всего по книге покупок в рублях и копейках</xs:documentation>
+										</xs:annotation>
+										<xs:simpleType>
+											<xs:restriction base="xs:decimal">
+												<xs:totalDigits value="19"/>
+												<xs:fractionDigits value="2"/>
+											</xs:restriction>
+										</xs:simpleType>
+									</xs:attribute>
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+						<xs:attribute name="Индекс" use="required">
+							<xs:annotation>
+								<xs:documentation>Индекс</xs:documentation>
+							</xs:annotation>
+							<xs:simpleType>
+								<xs:restriction base="КНДТип">
+									<xs:enumeration value="0000080"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:attribute>
+						<xs:attribute name="НомКорр" use="required">
+							<xs:annotation>
+								<xs:documentation>Номер корректировки</xs:documentation>
+							</xs:annotation>
+							<xs:simpleType>
+								<xs:restriction base="xs:integer">
+									<xs:totalDigits value="3"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:attribute>
+						<xs:attribute name="ПризнСвед8" use="optional">
+							<xs:annotation>
+								<xs:documentation>строка 001</xs:documentation>
+								<xs:documentation>Признак актуальности ранее представленных сведений (из книги покупок)</xs:documentation>
+							</xs:annotation>
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:length value="1"/>
+									<xs:enumeration value="0"/>
+									<xs:enumeration value="1"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:attribute>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+			<xs:attribute name="ИдФайл" use="required">
+				<xs:annotation>
+					<xs:documentation>Идентификатор файла</xs:documentation>
+					<xs:documentation>Содержит (повторяет) имя сформированного файла (без расширения)</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:minLength value="1"/>
+						<xs:maxLength value="100"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+			<xs:attribute name="ВерсПрог" use="required">
+				<xs:annotation>
+					<xs:documentation>Версия программы, с помощью которой сформирован файл</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="40"/>
+						<xs:minLength value="1"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+			<xs:attribute name="ВерсФорм" use="required">
+				<xs:annotation>
+					<xs:documentation>Версия формата</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:minLength value="1"/>
+						<xs:maxLength value="5"/>
+						<xs:enumeration value="5.05"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+	<xs:complexType name="СвУчСдТип">
+		<xs:annotation>
+			<xs:documentation>Сведения об участнике сделки</xs:documentation>
+		</xs:annotation>
+		<xs:choice>
+			<xs:element name="СведЮЛ">
+				<xs:annotation>
+					<xs:documentation/>
+					<xs:documentation>Сведения об организации</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:attribute name="ИННЮЛ" type="ИННЮЛТип" use="required">
+						<xs:annotation>
+							<xs:documentation>ИНН организации</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attribute name="КПП" type="КППТип" use="required">
+						<xs:annotation>
+							<xs:documentation>КПП</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="СведИП">
+				<xs:annotation>
+					<xs:documentation/>
+					<xs:documentation>Сведения об индивидуальном предпринимателе</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:attribute name="ИННФЛ" type="ИННФЛТип" use="required">
+						<xs:annotation>
+							<xs:documentation>ИНН физического лица</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+				</xs:complexType>
+			</xs:element>
+		</xs:choice>
+	</xs:complexType>
+	<xs:simpleType name="ИННФЛТип">
+		<xs:annotation>
+			<xs:documentation>Идентификационный номер налогоплательщика - физического лица</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:length value="12"/>
+			<xs:pattern value="([0-9]{1}[1-9]{1}|[1-9]{1}[0-9]{1})[0-9]{10}"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ИННЮЛТип">
+		<xs:annotation>
+			<xs:documentation>Идентификационный номер налогоплательщика - организации</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:length value="10"/>
+			<xs:pattern value="([0-9]{1}[1-9]{1}|[1-9]{1}[0-9]{1})[0-9]{8}"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="КППТип">
+		<xs:annotation>
+			<xs:documentation>Код причины постановки на учет (КПП) - 5 и 6 знаки от 0-9 и A-Z</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:length value="9"/>
+			<xs:pattern value="([0-9]{1}[1-9]{1}|[1-9]{1}[0-9]{1})([0-9]{2})([0-9A-Z]{2})([0-9]{3})"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="КНДТип">
+		<xs:annotation>
+			<xs:documentation>Код из Классификатора налоговой документации</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:length value="7"/>
+			<xs:pattern value="[0-9]{7}"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ОКВТип">
+		<xs:annotation>
+			<xs:documentation>Код из Общероссийского классификатора валют</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:length value="3"/>
+			<xs:pattern value="[0-9]{3}"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ДатаТип">
+		<xs:annotation>
+			<xs:documentation>Дата в формате ДД.ММ.ГГГГ (01.01.1900 - 31.12.2099)</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:length value="10"/>
+			<xs:pattern value="((((0[1-9]{1}|1[0-9]{1}|2[0-8]{1})\.(0[1-9]{1}|1[0-2]{1}))|((29|30)\.(01|0[3-9]{1}|1[0-2]{1}))|(31\.(01|03|05|07|08|10|12)))\.((19|20)[0-9]{2}))|(29\.02\.((19|20)(((0|2|4|6|8)(0|4|8))|((1|3|5|7|9)(2|6)))))"/>
+		</xs:restriction>
+	</xs:simpleType>
+</xs:schema>

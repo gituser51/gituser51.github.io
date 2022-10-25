@@ -1,0 +1,1275 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- edited with XMLSpy v2008 sp1 (http://www.altova.com) by ItsMe (EMBRACE) -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:sch="http://purl.oclc.org/dsdl/schematron" xmlns:usch="http://www.unisoftware.ru/schematron-extensions" xmlns:sql="urn:schemas-microsoft-com:mapping-schema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:element name="Файл">
+		<xs:annotation>
+			<!---********************************************************************************************************************************************************************-->
+			<xs:appinfo>
+				<sch:pattern name="Проверка имени файла на соответствие значению атрибута @ИдФайл">
+					<sch:rule context="Файл">
+						<!--  Проверка имени файла на соответствие ИдФайл                                                                             -->
+						<sch:assert test="usch:getFileName() = @ИдФайл">
+							<usch:error code="0400400007" path="@ИдФайл" value-of-select="@ИдФайл" doc-id-path="usch:getFileName()" doc-id-caption="Файл">Имя файла обмена "<usch:value-of select="usch:getFileName()"/>" не совпадает со значением элемента ИдФайл "<usch:value-of select="@ИдФайл"/>"</usch:error>
+						</sch:assert>
+					</sch:rule>
+				</sch:pattern>
+			</xs:appinfo>
+			<!---********************************************************************************************************************************************************************-->
+			<xs:documentation>Файл обмена</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="Документ">
+					<xs:annotation>
+						<!---************************************************************************************************************************************************************-->
+						<xs:appinfo>
+							<sch:pattern name="Присутствие ФИО (руководителя организации / представителя)  в  зависимости  от  значения  ПрПодп и наличия НПЮЛ">
+								<sch:rule context="Документ">
+									<!-- Контроль  обязательности  присутствия  ФИО (руководителя организации / представителя)  в  зависимости  от  значения  ПрПодп и наличия НПЮЛ -->
+									<sch:assert test=" (Подписант/ФИО and Подписант/@ПрПодп=2) or (Подписант/ФИО and Подписант/@ПрПодп=1 and СвНП/НПЮЛ) or 		(not(Подписант/ФИО) and Подписант/@ПрПодп=1 and СвНП/НПФЛ) ">
+										<usch:error code="0400300003" path="Подписант/ФИО" value-of-select="Подписант/@ПрПодп"> Не выполнено условие присутствия (отсутствия) элемента Файл/Документ/Подписант/ФИО при значении элемента ПрПодп, равном "<usch:value-of select="Подписант/@ПрПодп"/>". </usch:error>
+									</sch:assert>
+								</sch:rule>
+							</sch:pattern>
+						</xs:appinfo>
+						<!---************************************************************************************************************************************************************-->
+						<xs:documentation>Титульный лист</xs:documentation>
+						<xs:documentation>Состав и структура документа</xs:documentation>
+						<xs:documentation>part</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="СвНП">
+								<xs:annotation>
+									<xs:documentation/>
+									<xs:documentation>Сведения о налогоплательщике</xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:choice>
+										<xs:element name="НПЮЛ">
+											<xs:annotation>
+												<!---******************************************************************************************************************************************-->
+												<xs:appinfo>
+													<sch:pattern name="Контроль 5 и 6 знаков в значении элемента КПП">
+														<sch:rule context="НПЮЛ">
+															<!-- Табл.4.4. Контроль  5 и 6 знаков в значении элемента КПП на соответствие ограниченному перечню -->
+															<sch:assert test=" (substring(@КПП,5,2)=35) or (substring(@КПП,5,2)=77)">
+																<usch:error code="0400400005" path="@КПП" value-of-select="@КПП"> В значении элемента КПП 5 и 6 знаки, равные "<usch:value-of select="substring(@КПП,5,2)"/>", не соответствуют разрешенному перечню. </usch:error>
+															</sch:assert>
+														</sch:rule>
+													</sch:pattern>
+												</xs:appinfo>
+												<!---******************************************************************************************************************************************-->
+												<xs:documentation/>
+												<xs:documentation>Налогоплательщик - организация</xs:documentation>
+											</xs:annotation>
+											<xs:complexType>
+												<xs:sequence>
+													<xs:element name="СвРеоргЮЛ" minOccurs="0">
+														<xs:annotation>
+															<!---**********************************************************************************************************************************-->
+															<xs:appinfo>
+																<sch:pattern name="Присутствие атрибутов ИННЮЛ и КПП">
+																	<sch:rule context="СвРеоргЮЛ">
+																		<!-- Табл.4.5. Контроль  обязательности  присутствия  атрибутов  ИННЮЛ  и  КПП  в  зависимости  от  значения  атрибута  ФормРеорг  -->
+																		<sch:assert test="usch:iif(@ФормРеорг!=0, count(@ИННЮЛ)!=0, count(@ИННЮЛ)=0)">
+																			<usch:error code="0400300003" path="@ИННЮЛ" value-of-select="@ФормРеорг"> Не выполнено условие присутствия (отсутствия) элемента Файл/Документ/СвНП/НПЮЛ/СвРеоргЮЛ/ИННЮЛ при значении элемента ФормРеорг, равном "<usch:value-of select="@ФормРеорг"/>". </usch:error>
+																		</sch:assert>
+																		<sch:assert test="usch:iif(@ФормРеорг!=0, count(@КПП)!=0, count(@КПП)=0)">
+																			<usch:error code="0400300003" path="@КПП" value-of-select="@ФормРеорг"> Не выполнено условие присутствия (отсутствия) элемента Файл/Документ/СвНП/НПЮЛ/СвРеоргЮЛ/КПП при значении элемента ФормРеорг, равном "<usch:value-of select="@ФормРеорг"/>". </usch:error>
+																		</sch:assert>
+																	</sch:rule>
+																</sch:pattern>
+															</xs:appinfo>
+															<!---**********************************************************************************************************************************-->
+															<xs:documentation/>
+															<xs:documentation>Сведения о реорганизованной (ликвидированной) организации</xs:documentation>
+														</xs:annotation>
+														<xs:complexType>
+															<xs:attribute name="ФормРеорг" use="required">
+																<xs:annotation>
+																	<xs:documentation>Код формы реорганизации (ликвидация)</xs:documentation>
+																	<xs:documentation>Принимает значение:
+0 – ликвидация   | 
+1 – преобразование   | 
+2 – слияние   | 
+3 – разделение   | 
+5 – присоединение   | 
+6 – разделение с одновременным присоединением</xs:documentation>
+																</xs:annotation>
+																<xs:simpleType>
+																	<xs:restriction base="xs:string">
+																		<xs:length value="1"/>
+																		<xs:enumeration value="1"/>
+																		<xs:enumeration value="2"/>
+																		<xs:enumeration value="3"/>
+																		<xs:enumeration value="5"/>
+																		<xs:enumeration value="6"/>
+																		<xs:enumeration value="0"/>
+																	</xs:restriction>
+																</xs:simpleType>
+															</xs:attribute>
+															<xs:attribute name="ИННЮЛ" type="ИННЮЛТип" use="optional">
+																<xs:annotation>
+																	<xs:documentation>ИНН реорганизованной организации</xs:documentation>
+																</xs:annotation>
+															</xs:attribute>
+															<xs:attribute name="КПП" type="КППТип" use="optional">
+																<xs:annotation>
+																	<xs:documentation>КПП реорганизованной организации</xs:documentation>
+																</xs:annotation>
+															</xs:attribute>
+														</xs:complexType>
+													</xs:element>
+												</xs:sequence>
+												<xs:attribute name="НаимОрг" use="required">
+													<xs:annotation>
+														<xs:documentation>Полное наименование организации</xs:documentation>
+													</xs:annotation>
+													<xs:simpleType>
+														<xs:restriction base="xs:string">
+															<xs:minLength value="1"/>
+															<xs:maxLength value="1000"/>
+														</xs:restriction>
+													</xs:simpleType>
+												</xs:attribute>
+												<xs:attribute name="ИННЮЛ" type="ИННЮЛТип" use="required">
+													<xs:annotation>
+														<xs:documentation>ИНН организации</xs:documentation>
+													</xs:annotation>
+												</xs:attribute>
+												<xs:attribute name="КПП" type="КППТип" use="required">
+													<xs:annotation>
+														<xs:documentation>КПП</xs:documentation>
+													</xs:annotation>
+												</xs:attribute>
+											</xs:complexType>
+										</xs:element>
+										<xs:element name="НПФЛ">
+											<xs:annotation>
+												<xs:documentation/>
+												<xs:documentation>Налогоплательщик - физическое лицо, зарегистрированное в качестве индивидуального предпринимателя</xs:documentation>
+											</xs:annotation>
+											<xs:complexType>
+												<xs:sequence>
+													<xs:element name="ФИО" type="ФИОТип">
+														<xs:annotation>
+															<xs:documentation/>
+															<xs:documentation>Фамилия, имя, отчество физического лица</xs:documentation>
+														</xs:annotation>
+													</xs:element>
+												</xs:sequence>
+												<xs:attribute name="ИННФЛ" type="ИННФЛТип" use="required">
+													<xs:annotation>
+														<xs:documentation>ИНН физического лица</xs:documentation>
+													</xs:annotation>
+												</xs:attribute>
+											</xs:complexType>
+										</xs:element>
+									</xs:choice>
+									<xs:attribute name="ОКВЭД" type="ОКВЭДТип" use="required">
+										<xs:annotation>
+											<xs:documentation>Код по ОКВЭД </xs:documentation>
+										</xs:annotation>
+									</xs:attribute>
+									<xs:attribute name="Тлф" use="optional">
+										<xs:annotation>
+											<xs:documentation>Номер контактного телефона</xs:documentation>
+										</xs:annotation>
+										<xs:simpleType>
+											<xs:restriction base="xs:string">
+												<xs:minLength value="1"/>
+												<xs:maxLength value="20"/>
+											</xs:restriction>
+										</xs:simpleType>
+									</xs:attribute>
+								</xs:complexType>
+							</xs:element>
+							<xs:element name="Подписант">
+								<xs:annotation>
+									<!---************************************************************************************************************************************************************-->
+									<xs:appinfo>
+										<sch:pattern name="Присутствие сведений о представителе">
+											<sch:rule context="Подписант">
+												<!-- Контроль  обязательности  присутствия  Сведений  о  представителе  налогоплательщика  в  зависимости  от  значения  ПрПодп  -->
+												<sch:assert test="usch:iif(@ПрПодп=2, count(СвПред)!=0, (count(СвПред)!=0 or count(СвПред)=0))">
+													<usch:error code="0400300003" path="@ПрПодп" value-of-select="@ПрПодп">Не выполнено условие присутствия (отсутствия) элемента Файл/Документ/Подписант/СвПред при значении элемента ПрПодп, равном "<usch:value-of select="@ПрПодп"/>".</usch:error>
+												</sch:assert>
+											</sch:rule>
+										</sch:pattern>
+									</xs:appinfo>
+									<!---************************************************************************************************************************************************************-->
+									<xs:documentation/>
+									<xs:documentation>Сведения о лице, подписавшем документ</xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="ФИО" type="ФИОТип" minOccurs="0">
+											<xs:annotation>
+												<xs:documentation/>
+												<xs:documentation>Фамилия, имя, отчество</xs:documentation>
+											</xs:annotation>
+										</xs:element>
+										<xs:element name="СвПред" minOccurs="0">
+											<xs:annotation>
+												<xs:documentation/>
+												<xs:documentation>Сведения о представителе налогоплательщика</xs:documentation>
+												<xs:documentation>Обязательно для «ПрПодп»=2</xs:documentation>
+											</xs:annotation>
+											<xs:complexType>
+												<xs:attribute name="НаимДок" use="required">
+													<xs:annotation>
+														<xs:documentation>Наименование документа, подтверждающего полномочия представителя налогоплательщика </xs:documentation>
+													</xs:annotation>
+													<xs:simpleType>
+														<xs:restriction base="xs:string">
+															<xs:minLength value="1"/>
+															<xs:maxLength value="120"/>
+														</xs:restriction>
+													</xs:simpleType>
+												</xs:attribute>
+												<xs:attribute name="НаимОрг" use="optional">
+													<xs:annotation>
+														<xs:documentation>Наименование организации </xs:documentation>
+													</xs:annotation>
+													<xs:simpleType>
+														<xs:restriction base="xs:string">
+															<xs:minLength value="1"/>
+															<xs:maxLength value="1000"/>
+														</xs:restriction>
+													</xs:simpleType>
+												</xs:attribute>
+											</xs:complexType>
+										</xs:element>
+									</xs:sequence>
+									<xs:attribute name="ПрПодп" use="required">
+										<xs:annotation>
+											<xs:documentation>Признак лица, подписавшего документ</xs:documentation>
+											<xs:documentation>Принимает значение:
+1 – налогоплательщик   |
+2 – представитель налогоплательщика</xs:documentation>
+										</xs:annotation>
+										<xs:simpleType>
+											<xs:restriction base="xs:string">
+												<xs:length value="1"/>
+												<xs:enumeration value="1"/>
+												<xs:enumeration value="2"/>
+											</xs:restriction>
+										</xs:simpleType>
+									</xs:attribute>
+								</xs:complexType>
+							</xs:element>
+							<xs:element name="ЕНВД">
+								<xs:annotation>
+									<xs:documentation/>
+									<xs:documentation>Налоговая декларация по единому налогу на вмененный доход для отдельных видов деятельности</xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="СумНалПУВД">
+											<xs:annotation>
+												<xs:documentation/>
+												<xs:documentation>Сумма единого налога на вмененный доход, подлежащая уплате в бюджет</xs:documentation>
+											</xs:annotation>
+											<xs:complexType>
+												<xs:sequence>
+													<xs:element name="СумПУВД" maxOccurs="unbounded">
+														<xs:annotation>
+															<xs:documentation>Раздел 1</xs:documentation>
+															<xs:documentation>Сумма единого налога на вмененный доход, подлежащая уплате в бюджет, по коду ОКТМО</xs:documentation>
+															<xs:documentation>part</xs:documentation>
+														</xs:annotation>
+														<xs:complexType>
+															<xs:sequence>
+																<xs:element name="РасчНалВД" maxOccurs="unbounded">
+																	<xs:annotation>
+																		<xs:documentation>Раздел 2</xs:documentation>
+																		<xs:documentation>Расчет суммы единого налога на вмененный доход по отдельным видам деятельности</xs:documentation>
+																		<xs:documentation>part</xs:documentation>
+																	</xs:annotation>
+																	<xs:complexType>
+																		<xs:sequence>
+																			<xs:element name="АдрПредДеят" type="АдрРФТип">
+																				<xs:annotation>
+																					<xs:documentation/>
+																					<xs:documentation>Адрес места осуществления предпринимательской деятельности</xs:documentation>
+																				</xs:annotation>
+																			</xs:element>
+																			<xs:element name="РасчНалВДАдр">
+																				<xs:annotation>
+																					<xs:documentation/>
+																					<xs:documentation>Расчет суммы единого налога на вмененный доход для отдельных видов деятельности по адресу места осуществления предпринимательской деятельности</xs:documentation>
+																				</xs:annotation>
+																				<xs:complexType>
+																					<xs:attribute name="БазДоход" use="required">
+																						<xs:annotation>
+																							<xs:documentation>строка 040</xs:documentation>
+																							<xs:documentation>Базовая доходность на единицу физического показателя в месяц</xs:documentation>
+																						</xs:annotation>
+																						<xs:simpleType>
+																							<xs:restriction base="xs:integer">
+																								<xs:totalDigits value="6"/>
+																							</xs:restriction>
+																						</xs:simpleType>
+																					</xs:attribute>
+																					<xs:attribute name="К1" use="required">
+																						<xs:annotation>
+																							<xs:documentation>строка 050</xs:documentation>
+																							<xs:documentation>Корректирующий коэффициент К1</xs:documentation>
+																						</xs:annotation>
+																						<xs:simpleType>
+																							<xs:restriction base="xs:decimal">
+																								<xs:totalDigits value="4"/>
+																								<xs:fractionDigits value="3"/>
+																							</xs:restriction>
+																						</xs:simpleType>
+																					</xs:attribute>
+																					<xs:attribute name="К2" use="required">
+																						<xs:annotation>
+																							<xs:documentation>строка 060</xs:documentation>
+																							<xs:documentation>Корректирующий коэффициент К2</xs:documentation>
+																						</xs:annotation>
+																						<xs:simpleType>
+																							<xs:restriction base="xs:decimal">
+																								<xs:totalDigits value="4"/>
+																								<xs:fractionDigits value="3"/>
+																							</xs:restriction>
+																						</xs:simpleType>
+																					</xs:attribute>
+																					<xs:attribute name="ФизПокМес1" use="optional">
+																						<xs:annotation>
+																							<xs:documentation>строка 070 столбец 2</xs:documentation>
+																							<xs:documentation>Величина физического показателя в 1 месяце квартала</xs:documentation>
+																						</xs:annotation>
+																						<xs:simpleType>
+																							<xs:restriction base="xs:integer">
+																								<xs:totalDigits value="6"/>
+																							</xs:restriction>
+																						</xs:simpleType>
+																					</xs:attribute>
+																					<xs:attribute name="КолДнейМес1" use="optional">
+																						<xs:annotation>
+																							<xs:documentation>строка 070 столбец 3</xs:documentation>
+																							<xs:documentation>Количество календарных дней осуществления деятельности при постановке на учет (снятии с учета) в качестве налогоплательщика единого налога в 1 месяце квартала</xs:documentation>
+																						</xs:annotation>
+																						<xs:simpleType>
+																							<xs:restriction base="xs:integer">
+																								<xs:totalDigits value="2"/>
+																							</xs:restriction>
+																						</xs:simpleType>
+																					</xs:attribute>
+																					<xs:attribute name="НалБазаМес1" use="optional">
+																						<xs:annotation>
+																							<xs:documentation>строка 070 столбец 5</xs:documentation>
+																							<xs:documentation>Налоговая база с учетом количества календарных дней осуществления деятельности при постановке на учет (снятии с учета) в качестве налогоплательщика единого налога в 1 месяце квартала</xs:documentation>
+																						</xs:annotation>
+																						<xs:simpleType>
+																							<xs:restriction base="xs:integer">
+																								<xs:totalDigits value="10"/>
+																							</xs:restriction>
+																						</xs:simpleType>
+																					</xs:attribute>
+																					<xs:attribute name="ФизПокМес2" use="optional">
+																						<xs:annotation>
+																							<xs:documentation>строка 080 столбец 2</xs:documentation>
+																							<xs:documentation>Величина физического показателя во 2 месяце квартала</xs:documentation>
+																						</xs:annotation>
+																						<xs:simpleType>
+																							<xs:restriction base="xs:integer">
+																								<xs:totalDigits value="6"/>
+																							</xs:restriction>
+																						</xs:simpleType>
+																					</xs:attribute>
+																					<xs:attribute name="КолДнейМес2" use="optional">
+																						<xs:annotation>
+																							<xs:documentation>строка 080 столбец 3</xs:documentation>
+																							<xs:documentation>Количество календарных дней осуществления деятельности при постановке на учет (снятии с учета) в качестве налогоплательщика единого налога во 2 месяце квартала</xs:documentation>
+																						</xs:annotation>
+																						<xs:simpleType>
+																							<xs:restriction base="xs:integer">
+																								<xs:totalDigits value="2"/>
+																							</xs:restriction>
+																						</xs:simpleType>
+																					</xs:attribute>
+																					<xs:attribute name="НалБазаМес2" use="optional">
+																						<xs:annotation>
+																							<xs:documentation>строка 080 столбец 5</xs:documentation>
+																							<xs:documentation>Налоговая база с учетом количества календарных дней осуществления деятельности при постановке на учет (снятии с учета) в качестве налогоплательщика единого налога во 2 месяце квартала</xs:documentation>
+																						</xs:annotation>
+																						<xs:simpleType>
+																							<xs:restriction base="xs:integer">
+																								<xs:totalDigits value="10"/>
+																							</xs:restriction>
+																						</xs:simpleType>
+																					</xs:attribute>
+																					<xs:attribute name="ФизПокМес3" use="optional">
+																						<xs:annotation>
+																							<xs:documentation>строка 090 столбец 2</xs:documentation>
+																							<xs:documentation>Величина физического показателя в 3 месяце квартала</xs:documentation>
+																						</xs:annotation>
+																						<xs:simpleType>
+																							<xs:restriction base="xs:integer">
+																								<xs:totalDigits value="6"/>
+																							</xs:restriction>
+																						</xs:simpleType>
+																					</xs:attribute>
+																					<xs:attribute name="КолДнейМес3" use="optional">
+																						<xs:annotation>
+																							<xs:documentation>строка 090 столбец 3</xs:documentation>
+																							<xs:documentation>Количество календарных дней осуществления деятельности при постановке на учет (снятии с учета) в качестве налогоплательщика единого налога в 3 месяце квартала</xs:documentation>
+																						</xs:annotation>
+																						<xs:simpleType>
+																							<xs:restriction base="xs:integer">
+																								<xs:totalDigits value="2"/>
+																							</xs:restriction>
+																						</xs:simpleType>
+																					</xs:attribute>
+																					<xs:attribute name="НалБазаМес3" use="optional">
+																						<xs:annotation>
+																							<xs:documentation>строка 070 столбец 5</xs:documentation>
+																							<xs:documentation>Налоговая база с учетом количества календарных дней осуществления деятельности при постановке на учет (снятии с учета) в качестве налогоплательщика единого налога в 3 месяце квартала</xs:documentation>
+																						</xs:annotation>
+																						<xs:simpleType>
+																							<xs:restriction base="xs:integer">
+																								<xs:totalDigits value="10"/>
+																							</xs:restriction>
+																						</xs:simpleType>
+																					</xs:attribute>
+																					<xs:attribute name="НалБаза" use="required">
+																						<xs:annotation>
+																							<xs:documentation>строка 100</xs:documentation>
+																							<xs:documentation>Налоговая база всего</xs:documentation>
+																						</xs:annotation>
+																						<xs:simpleType>
+																							<xs:restriction base="xs:integer">
+																								<xs:totalDigits value="10"/>
+																							</xs:restriction>
+																						</xs:simpleType>
+																					</xs:attribute>
+																					<xs:attribute name="Ставка" use="required">
+																						<xs:annotation>
+																							<xs:documentation>строка 105</xs:documentation>
+																							<xs:documentation>Ставка налога</xs:documentation>
+																						</xs:annotation>
+																						<xs:simpleType>
+																							<xs:restriction base="xs:decimal">
+																								<xs:totalDigits value="3"/>
+																								<xs:fractionDigits value="1"/>
+																							</xs:restriction>
+																						</xs:simpleType>
+																					</xs:attribute>
+																					<xs:attribute name="СумНалИсчисл" use="required">
+																						<xs:annotation>
+																							<xs:documentation>строка 110</xs:documentation>
+																							<xs:documentation>Сумма исчисленного единого налога на вмененный доход за налоговый период</xs:documentation>
+																						</xs:annotation>
+																						<xs:simpleType>
+																							<xs:restriction base="xs:integer">
+																								<xs:totalDigits value="10"/>
+																							</xs:restriction>
+																						</xs:simpleType>
+																					</xs:attribute>
+																				</xs:complexType>
+																			</xs:element>
+																		</xs:sequence>
+																		<xs:attribute name="КодВД" use="required">
+																			<xs:annotation>
+																				<xs:documentation>строка 010</xs:documentation>
+																				<xs:documentation>Код вида предпринимательской деятельности</xs:documentation>
+																			</xs:annotation>
+																			<xs:simpleType>
+																				<xs:restriction base="xs:string">
+																					<xs:length value="2"/>
+																				</xs:restriction>
+																			</xs:simpleType>
+																		</xs:attribute>
+																	</xs:complexType>
+																</xs:element>
+															</xs:sequence>
+															<xs:attribute name="ОКТМО" type="ОКТМОТип" use="required">
+																<xs:annotation>
+																	<xs:documentation>строка 010</xs:documentation>
+																	<xs:documentation>Код по ОКТМО</xs:documentation>
+																</xs:annotation>
+															</xs:attribute>
+															<xs:attribute name="НалПУ" use="required">
+																<xs:annotation>
+																	<xs:documentation>строка 020</xs:documentation>
+																	<xs:documentation>Сумма единого налога на вмененный доход, подлежащая уплате за налоговый период</xs:documentation>
+																</xs:annotation>
+																<xs:simpleType>
+																	<xs:restriction base="xs:integer">
+																		<xs:totalDigits value="10"/>
+																	</xs:restriction>
+																</xs:simpleType>
+															</xs:attribute>
+														</xs:complexType>
+													</xs:element>
+												</xs:sequence>
+											</xs:complexType>
+										</xs:element>
+										<xs:element name="СумНалПУ">
+											<xs:annotation>
+												<xs:documentation>Раздел 3</xs:documentation>
+												<xs:documentation>Расчет суммы единого налога на вмененный доход за налоговый период</xs:documentation>
+												<xs:documentation>part</xs:documentation>
+											</xs:annotation>
+											<xs:complexType>
+												<xs:attribute name="ПризнакНП" use="required">
+													<xs:annotation>
+														<xs:documentation>строка 005</xs:documentation>
+														<xs:documentation>Признак налогоплательщика</xs:documentation>
+													</xs:annotation>
+													<xs:simpleType>
+														<xs:restriction base="xs:string">
+															<xs:length value="1"/>
+															<xs:enumeration value="1"/>
+															<xs:enumeration value="2"/>
+														</xs:restriction>
+													</xs:simpleType>
+												</xs:attribute>
+												<xs:attribute name="СумНалИсчислОбщ" use="required">
+													<xs:annotation>
+														<xs:documentation>строка 010</xs:documentation>
+														<xs:documentation>Сумма исчисленного за налоговый период единого налога на вмененный доход</xs:documentation>
+													</xs:annotation>
+													<xs:simpleType>
+														<xs:restriction base="xs:integer">
+															<xs:totalDigits value="10"/>
+														</xs:restriction>
+													</xs:simpleType>
+												</xs:attribute>
+												<xs:attribute name="СумСВУм346.32.2" use="optional">
+													<xs:annotation>
+														<xs:documentation>строка 020</xs:documentation>
+														<xs:documentation>Сумма страховых взносов, платежей и расходов, предусмотренных пунктом 2 статьи 346.32 Налогового кодекса Российской Федерации, на которые может быть уменьшена сумма исчисленного за налоговый период единого налога на вмененный доход налогоплательщиком, производящим выплаты работникам, занятым в тех сферах деятельности налогоплательщика, по которым уплачивается единый налог</xs:documentation>
+													</xs:annotation>
+													<xs:simpleType>
+														<xs:restriction base="xs:integer">
+															<xs:totalDigits value="10"/>
+														</xs:restriction>
+													</xs:simpleType>
+												</xs:attribute>
+												<xs:attribute name="СумСВ_ИП" use="optional">
+													<xs:annotation>
+														<xs:documentation>строка 030</xs:documentation>
+														<xs:documentation>Сумма страховых взносов, уплаченных индивидуальным предпринимателем в фиксированном размере на обязательное пенсионное страхование и на обязательное медицинское страхование</xs:documentation>
+													</xs:annotation>
+													<xs:simpleType>
+														<xs:restriction base="xs:integer">
+															<xs:totalDigits value="10"/>
+														</xs:restriction>
+													</xs:simpleType>
+												</xs:attribute>
+												<xs:attribute name="НалПУРасч" use="required">
+													<xs:annotation>
+														<xs:documentation>строка 040</xs:documentation>
+														<xs:documentation>Общая сумма единого налога на вмененный доход, подлежащая уплате в бюджет за налоговый период</xs:documentation>
+													</xs:annotation>
+													<xs:simpleType>
+														<xs:restriction base="xs:integer">
+															<xs:totalDigits value="10"/>
+														</xs:restriction>
+													</xs:simpleType>
+												</xs:attribute>
+											</xs:complexType>
+										</xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+						<xs:attribute name="КНД" use="required">
+							<xs:annotation>
+								<xs:documentation>Код формы отчетности по КНД</xs:documentation>
+							</xs:annotation>
+							<xs:simpleType>
+								<xs:restriction base="КНДТип">
+									<xs:enumeration value="1152016"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:attribute>
+						<xs:attribute name="ДатаДок" type="ДатаТип" use="required">
+							<xs:annotation>
+								<xs:documentation>Дата формирования документа</xs:documentation>
+								<xs:documentation>
+Дата в формате ДД.ММ.ГГГГ</xs:documentation>
+							</xs:annotation>
+						</xs:attribute>
+						<xs:attribute name="Период" use="required">
+							<xs:annotation>
+								<xs:documentation>Период (код)</xs:documentation>
+							</xs:annotation>
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:length value="2"/>
+									<xs:enumeration value="21"/>
+									<xs:enumeration value="22"/>
+									<xs:enumeration value="23"/>
+									<xs:enumeration value="24"/>
+									<xs:enumeration value="51"/>
+									<xs:enumeration value="54"/>
+									<xs:enumeration value="55"/>
+									<xs:enumeration value="56"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:attribute>
+						<xs:attribute name="ОтчетГод" type="xs:gYear" use="required">
+							<xs:annotation>
+								<xs:documentation>Отчетный год</xs:documentation>
+								<xs:documentation>
+Год в формате ГГГГ</xs:documentation>
+							</xs:annotation>
+						</xs:attribute>
+						<xs:attribute name="КодНО" type="СОНОТип" use="required">
+							<xs:annotation>
+								<xs:documentation>Код налогового органа</xs:documentation>
+							</xs:annotation>
+						</xs:attribute>
+						<xs:attribute name="НомКорр" use="required">
+							<xs:annotation>
+								<xs:documentation>Номер корректировки</xs:documentation>
+							</xs:annotation>
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:minLength value="1"/>
+									<xs:maxLength value="3"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:attribute>
+						<xs:attribute name="ПоМесту" use="required">
+							<xs:annotation>
+								<xs:documentation>Код места, по которому представляется документ</xs:documentation>
+							</xs:annotation>
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:length value="3"/>
+									<xs:enumeration value="120"/>
+									<xs:enumeration value="214"/>
+									<xs:enumeration value="215"/>
+									<xs:enumeration value="245"/>
+									<xs:enumeration value="310"/>
+									<xs:enumeration value="320"/>
+									<xs:enumeration value="331"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:attribute>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+			<xs:attribute name="ИдФайл" use="required">
+				<xs:annotation>
+					<xs:documentation>Идентификатор файла</xs:documentation>
+					<xs:documentation>Содержит (повторяет) имя сформированного файла (без расширения)</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:minLength value="1"/>
+						<xs:maxLength value="255"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+			<xs:attribute name="ВерсПрог" use="required">
+				<xs:annotation>
+					<xs:documentation>Версия программы, с помощью которой сформирован файл</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="40"/>
+						<xs:minLength value="1"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+			<xs:attribute name="ВерсФорм" use="required">
+				<xs:annotation>
+					<xs:documentation>Версия формата</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:minLength value="1"/>
+						<xs:maxLength value="5"/>
+						<xs:enumeration value="5.07"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+	<xs:complexType name="АдрРФТип">
+		<xs:annotation>
+			<xs:documentation>Адрес в Российской Федерации </xs:documentation>
+		</xs:annotation>
+		<xs:attribute name="Индекс" use="optional">
+			<xs:annotation>
+				<xs:documentation>Индекс</xs:documentation>
+			</xs:annotation>
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:length value="6"/>
+					<xs:pattern value="[0-9]{6}"/>
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+		<xs:attribute name="КодРегион" use="required">
+			<xs:annotation>
+				<xs:documentation>Код региона</xs:documentation>
+			</xs:annotation>
+			<xs:simpleType>
+				<xs:restriction base="CCРФТип"/>
+			</xs:simpleType>
+		</xs:attribute>
+		<xs:attribute name="Район" use="optional">
+			<xs:annotation>
+				<xs:documentation>Район</xs:documentation>
+			</xs:annotation>
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:minLength value="1"/>
+					<xs:maxLength value="50"/>
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+		<xs:attribute name="Город" use="optional">
+			<xs:annotation>
+				<xs:documentation>Город</xs:documentation>
+			</xs:annotation>
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:maxLength value="50"/>
+					<xs:minLength value="1"/>
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+		<xs:attribute name="НаселПункт" use="optional">
+			<xs:annotation>
+				<xs:documentation>Населенный пункт</xs:documentation>
+			</xs:annotation>
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:minLength value="1"/>
+					<xs:maxLength value="50"/>
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+		<xs:attribute name="Улица" use="optional">
+			<xs:annotation>
+				<xs:documentation>Улица</xs:documentation>
+			</xs:annotation>
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:minLength value="1"/>
+					<xs:maxLength value="50"/>
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+		<xs:attribute name="Дом" use="optional">
+			<xs:annotation>
+				<xs:documentation>Дом</xs:documentation>
+			</xs:annotation>
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:minLength value="1"/>
+					<xs:maxLength value="20"/>
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+		<xs:attribute name="Корпус" use="optional">
+			<xs:annotation>
+				<xs:documentation>Корпус</xs:documentation>
+			</xs:annotation>
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:minLength value="1"/>
+					<xs:maxLength value="20"/>
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+		<xs:attribute name="Кварт" use="optional">
+			<xs:annotation>
+				<xs:documentation>Квартира</xs:documentation>
+			</xs:annotation>
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:minLength value="1"/>
+					<xs:maxLength value="20"/>
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="ФИОТип">
+		<xs:annotation>
+			<xs:documentation>Фамилия, имя, отчество</xs:documentation>
+		</xs:annotation>
+		<xs:attribute name="Фамилия" use="required">
+			<xs:annotation>
+				<xs:documentation>Фамилия</xs:documentation>
+			</xs:annotation>
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:minLength value="1"/>
+					<xs:maxLength value="60"/>
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+		<xs:attribute name="Имя" use="required">
+			<xs:annotation>
+				<xs:documentation>Имя</xs:documentation>
+			</xs:annotation>
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:minLength value="1"/>
+					<xs:maxLength value="60"/>
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+		<xs:attribute name="Отчество" use="optional">
+			<xs:annotation>
+				<xs:documentation>Отчество</xs:documentation>
+			</xs:annotation>
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:minLength value="1"/>
+					<xs:maxLength value="60"/>
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="JavaScript">
+		<xs:annotation>
+			<xs:appinfo>
+				<!--**********************************************************************************************************************************************-->
+				<!--                                                       Функция получения текущей даты                                                     -->
+				<usch:jscript><![CDATA[ 
+									function getDateCurrent()
+					{
+
+						var DateCurrent = new Date();                                                           	 // получить объект - текущую дату
+						var dd = DateCurrent.getDate();
+						var dd1 = 0
+						if (dd <= "9")
+						{dd = "0" + dd;}
+						var mm = DateCurrent.getMonth() + 1;
+						if (mm <= "9")
+						{mm = "0" + mm;}
+						var yyyy = DateCurrent.getFullYear()
+						var dmy = dd +"." + mm + "."  +yyyy;
+						{return dmy ;}																						
+					}
+					]]></usch:jscript>
+				<!--**********************************************************************************************************************************************-->
+				<!--**********************************************************************************************************************************************-->
+				<!--                                                       Функция сравнения даты с текущей датой                                                       -->
+				<usch:jscript><![CDATA[ 
+									function checkDateCurrent(context)
+					{
+						var value = getNextValue(context)
+						var Param = value.split(".")                                                             // получить дату и разделить ее на подстроки дд мм ггггг  
+						var DateParam = new Date (Param [2], Param [1] - 1, Param [0])        	 //Создать объект даты в формате гггг мм дд
+						var DateCurrent = new Date()                                                           	 // получить текущую дату
+							if ( Date.parse(DateCurrent) >= Date.parse(DateParam)) 						// Дата документа меньше текущей даты?
+						{return true;}																						//Да
+							else
+						{return false;}																						//Нет
+					}
+					]]></usch:jscript>
+				<usch:jscript>
+					<!--**********************************************************************************************************************************************-->
+					<!--                          Функция проверки контрольного числа СНИЛС                                                   --><![CDATA[ 
+										function checkSNILS(context)
+					{
+							var value = getNextValue(context)											      //Получить СНИЛС
+							var part = value.substr(0,3) + value.substr(4,3) + value.substr(8,3)    //Получить 9 цифр СНИЛС, убрав знаки тире	
+							var ContrNum = value.substr(12,2)											      //Выделить КЧ из СНИЛС
+						if (part <= 001001998)
+							{return true;}
+							var summa = 0, leng =9;	
+					    for (var count = 0; count < 9; count++) 
+							{summa += part.substr(count,1) * leng--;}
+							summa = (summa % 101) % 100;						//Если summa = (100 или 101) то КЧ = 00
+						if (ContrNum == summa)																//КЧ совпадают   
+							{return true;}
+						else
+							{return false;}
+					}
+					]]></usch:jscript>
+				<!--****************************************************************************************************************************************-->
+				<!--********* Функция проверки по шаблону серии и номера документа, удостоверяющего личность **********-->
+				<usch:jscript><![CDATA[ 
+// -------------------------- Функция проверки по шаблону серии и номера документа, удостоверяющего личность-----------------------
+function checkDocument(value, template) {
+	if (!value || !template) {
+		return ('');
+	}
+	template = getNextValue(template);
+	value = getNextValue(value);
+
+	value = repairString(value).toUpperCase();
+	var feedback = new Array(value, template, value);
+	
+	if (template.indexOf('R') ==0 && value.indexOf('-') >0) {
+		feedback = USSR(feedback);	// Паспорт СССР, Св-во о рождении (первая буква в шаблоне "R")
+	}
+	
+	if (feedback) {
+		value	 = feedback[2];
+		template = feedback[1];
+		feedback = feedback[0];
+		
+		var textlen = feedback.length;
+		var tempLen = template.length;
+		
+		var error = true;
+		if (template.indexOf('S') >-1 && textlen <= tempLen) {
+			error = false;
+		} else if (textlen >= CHRTRAN(template,'0').length && textlen <= tempLen) {
+			error = false;
+			var symbol;
+			var regNumb = new RegExp(/\d/);
+			var regChar = new RegExp(/[А-ЯЁ]/);
+			
+			for (var n=0; n < tempLen; n++) {
+				symbol = feedback.slice(n,n+1);
+				switch (template.slice(n,n+1)) {
+					case ('-'): if (symbol !='-') {error = true;}			break;
+					case (' '): if (symbol !=' ') {error = true;}			break;
+					case ('Б'): if (!regChar.test(symbol)) {error = true;}	break;
+					case ('0'): if (!regNumb.test(symbol)) {error = true;}	break;
+					case ('9'): if (!regNumb.test(symbol)) {error = true;}
+				}
+				if (error || textlen == n+1) {break;}
+			}
+		}
+		/*if (error) {
+			//alert('Введенные Вами серия и номер документа не соответствуют формату!');
+			alert('Неверная структура введённого значения. Не соответствует шаблону ['+ template +'].');
+		}*/
+	}
+	
+	return (!error);
+}
+					]]></usch:jscript>
+				<!--**********************************************************************************************************************************************-->
+// Приведение строки в божеский вид. --------------------------------------------------------
+				<usch:jscript><![CDATA[ 
+function repairString(expression, len) {
+	//return expression.replace(/^\s+|\s+$/g,'').replace(/\n|\r|\s\s+/g,' ');
+	expression = removeDS(rTrim(lTrim(removeCR(expression.toString()))));
+	len = parseInt(len);
+	if (!isNaN(len)) {
+		expression = expression.slice(0,len)
+	}
+	return (expression);
+}
+					]]></usch:jscript>
+				<!--**********************************************************************************************************************************************-->
+// Замена символов перевода строки и возврата каретки, символом пробела. --------------------
+				<usch:jscript><![CDATA[ 
+function removeCR(expression) {
+	return expression.replace(/\n|\r/g,' ');		// carriage return and line feed
+}
+					]]></usch:jscript>
+				<!--**********************************************************************************************************************************************-->
+// Удаление повторяющихся пробелов. ---------------------------------------------------------
+				<usch:jscript><![CDATA[ 
+function removeDS(expression) {
+	return expression.replace(/\s\s+/g,' ');		// double space
+}
+					]]></usch:jscript>
+				<!--**********************************************************************************************************************************************-->
+// Удаление начальных пробелов. -------------------------------------------------------------
+				<usch:jscript><![CDATA[ 
+function lTrim(expression) {
+	return expression.replace(/^\s+/,'');
+}
+					]]></usch:jscript>
+				<!--**********************************************************************************************************************************************-->
+// Удаление конечных пробелов. --------------------------------------------------------------
+				<usch:jscript><![CDATA[ 
+function rTrim(expression) {
+	return expression.replace(/\s+$/,'');
+}
+					]]></usch:jscript>
+				<!--**********************************************************************************************************************************************-->
+// Замена символов
+				<usch:jscript><![CDATA[ 
+function CHRTRAN(cSearched, cExpressionSought, cReplacement) {
+	if (cSearched) {
+		try {
+			if (cExpressionSought) {
+				var value = cSearched.toString();
+				var expr = cExpressionSought.toString();
+				var repl ='';
+				if (cReplacement) {repl = cReplacement.toString();}
+				
+				var result ='',   part ='',   amount =0;
+				var exPart = expr.split('');
+				
+				for (var j=0; j < exPart.length; j++) {
+					result ='';
+					part = value.split(exPart[j]);
+					amount = part.length -1;
+					for (var i=0; i < amount; i++) {
+						result += part[i] + repl.slice(j,j+1);
+					}
+					result += part[amount];
+					value = result;
+				}
+				return (value);
+			}
+		} catch (e) {alert(e.message); throw e;}
+		
+		return (cSearched);
+	}
+}
+					]]></usch:jscript>
+				<!--**********************************************************************************************************************************************-->
+// Паспорт гражданина СССР, Свидетельство о рождении (первая буква в шаблоне "R")
+				<usch:jscript><![CDATA[ 
+function USSR(arValue) {
+	var feedback = null;
+			
+	var part = arValue[0].split('-');
+	var numb = parseInt(part[0]);
+	if (numb) {
+		numb = ArabicToRoman(numb);
+	} else {
+		part[0] = CHRTRAN(part[0],'СМХ','CMX');
+		if (part[0] == ArabicToRoman(RomanToArabic(part[0]))) {
+			numb = part[0];
+		} else {
+			var warning ='Введенное Вами римское число неверно!\nМожно ввести серию равным по величине';
+			warning +=' арабским числом или использовать латинские буквы I,V,X,L,M,C и русские Х,М,С';
+			alert('Введенное Вами римское число неверно!');
+		}
+	}
+	
+	if (numb) {
+		feedback = new Array(3);
+		feedback[0] = STRTRAN(arValue[0], part[0] +'-', '', 1, 1);	// остаток значения
+		feedback[1] = STRTRAN(arValue[1], 'R-', '', 1, 1);			// остаток шаблона
+		feedback[2] = STRTRAN(arValue[0], part[0], numb, 1, 1);		// полное значение
+	}
+	
+	return (feedback);
+}
+					]]></usch:jscript>
+				<!--**********************************************************************************************************************************************-->
+// перевод Римских цифр в Арабские
+					
+				<usch:jscript><![CDATA[ 
+function RomanToArabic(value) {
+	var feedback =0;
+	var curValue =0;
+	var next;
+	for (var n=0; n < value.length ; n++) {
+		next = value.slice(n+1,n+2);
+		switch (value.slice(n,n+1)) {
+			case ('I'): feedback += (next && 'VX'.indexOf(next) >=0 ?-1 :1);		break;
+			case ('V'): feedback += 5;												break;
+			case ('X'): feedback += (next && 'LC'.indexOf(next) >=0 ?-10 :10);		break;
+			case ('L'): feedback += 50;												break;
+			case ('C'): feedback += (next && 'DM'.indexOf(next) >=0 ?-100 :100);	break;
+			case ('D'): feedback += 500;											break;
+			case ('M'): feedback += 1000;
+		}
+	}
+	
+	return (feedback);
+}
+					]]></usch:jscript>
+				<!--**********************************************************************************************************************************************-->
+// перевод Арабских цифр в Римские
+				<usch:jscript><![CDATA[ 
+function ArabicToRoman(value) {
+	var feedback ='';
+	var curValue ='';
+	var part = PADL(value,4).split('');
+	var arTemp = new Array();
+	arTemp[0]=['M','MM','MMM'];
+	arTemp[1]=['C','CC','CCC','CD','D','DC','DCC','DCCC','CM'];
+	arTemp[2]=['X','XX','XXX','XL','L','LX','LXX','LXXX','XC'];
+	arTemp[3]=['I','II','III','IV','V','VI','VII','VIII','IX'];
+	
+	for (var n=0; n < arTemp.length; n++) {
+		if (arTemp[n].length >= part[n]) {
+			curValue = arTemp[n][part[n]-1];
+			if (curValue) {feedback += curValue;}
+		}
+	}
+	
+	return (feedback);
+}
+					]]></usch:jscript>
+				<!--**********************************************************************************************************************************************-->
+				<usch:jscript><![CDATA[ 
+function STRTRAN(cSearched, cExpressionSought, cReplacement, nStartOccurrence, nNumberOfOccurrences) {
+	try {
+		if (cSearched && cExpressionSought) {
+			var value = cSearched.toString();
+			var expr = cExpressionSought.toString();
+			var repl ='';
+			if (cReplacement) {repl = cReplacement.toString();}
+			
+			var start = conversionToPositiveNumber(nStartOccurrence);
+			var count = conversionToPositiveNumber(nNumberOfOccurrences);
+			
+			var result ='';
+			var _tally =0;
+			var part = value.split(expr);
+			
+			var amount = part.length -1;
+			for (var i=0; i < amount; i++) {
+				if (start) {
+					if (i >= start -1) {
+						_tally++;
+						if (count && _tally > count) {result += part[i] + expr;}	// без изменений
+						else						 {result += part[i] + repl;}	// замена
+					} else							 {result += part[i] + expr;}	// без изменений
+				} else								 {result += part[i] + repl;}	// замена
+			}
+			
+			return (result += part[amount]);										// ВЫХОД с заменой ->
+		}
+	} catch (e) {alert('Процедура "STRTRAN" вызвала ошибку.\n'+ e.message); throw e;}
+	
+	return (cSearched);																// ВЫХОД без изменений->
+}
+					]]></usch:jscript>
+				<!--**********************************************************************************************************************************************-->
+				<usch:jscript><![CDATA[ 
+function conversionToPositiveNumber(value) {
+	var feedback =0;
+	if (value) {
+		value = parseInt(value);
+		if (value) {feedback = (value < 0) ?0 - value :value;}
+	}
+	return (feedback);
+}
+					]]></usch:jscript>
+				<!--**********************************************************************************************************************************************-->
+// Добавление ведущих символов. -------------------------------------------------------------
+				<usch:jscript><![CDATA[ 
+function PADL(value, len, symbol) {
+	var feedback ='';
+	value = value.toString();
+	var lenVal = value.length;
+	var size = len ?'len' :'lenVal';
+	symbol = symbol ?symbol.slice(0,1) :' ';
+	len = len ?Number(len) :0;	len = isNaN(len) ?0 :len;
+	if (lenVal < len) {
+		for (var i=0; i < len - lenVal; i++) {feedback += symbol;}
+		feedback += value
+	} else {feedback = value.slice(0,eval(size));}
+	return (feedback);
+}
+					]]></usch:jscript>
+				<!--**********************************************************************************************************************************************-->
+			</xs:appinfo>
+			<xs:documentation>Функции JavaScript</xs:documentation>
+		</xs:annotation>
+	</xs:complexType>
+	<xs:simpleType name="ИННФЛТип">
+		<xs:annotation>
+			<xs:documentation>Идентификационный номер налогоплательщика - физического лица</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:length value="12"/>
+			<xs:pattern value="([0-9]{1}[1-9]{1}|[1-9]{1}[0-9]{1})[0-9]{10}"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ИННЮЛТип">
+		<xs:annotation>
+			<xs:documentation>Идентификационный номер налогоплательщика - организации</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:length value="10"/>
+			<xs:pattern value="([0-9]{1}[1-9]{1}|[1-9]{1}[0-9]{1})[0-9]{8}"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="КППТип">
+		<xs:annotation>
+			<xs:documentation>Код причины постановки на учет (КПП) - 5 и 6 знаки от 0-9 и A-Z</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:length value="9"/>
+			<xs:pattern value="([0-9]{1}[1-9]{1}|[1-9]{1}[0-9]{1})([0-9]{2})([0-9A-Z]{2})([0-9]{3})"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="КНДТип">
+		<xs:annotation>
+			<xs:documentation>Код из Классификатора налоговой документации</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:length value="7"/>
+			<xs:pattern value="[0-9]{7}"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="КБКТип">
+		<xs:annotation>
+			<xs:documentation>Код из Классификатора бюджетной классификации</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:length value="20"/>
+			<xs:pattern value="[0-9]{20}"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="СОНОТип">
+		<xs:annotation>
+			<xs:documentation>Коды из Классификатора системы обозначений налоговых органов</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:length value="4"/>
+			<xs:pattern value="[0-9]{4}"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ОКВЭДТип">
+		<xs:annotation>
+			<xs:documentation>Код из Общероссийского классификатора видов экономической деятельности</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="8"/>
+			<xs:minLength value="2"/>
+			<xs:pattern value="[0-9]{2}"/>
+			<xs:pattern value="[0-9]{2}\.[0-9]{1}"/>
+			<xs:pattern value="[0-9]{2}\.[0-9]{2}"/>
+			<xs:pattern value="[0-9]{2}\.[0-9]{2}\.[0-9]{1}"/>
+			<xs:pattern value="[0-9]{2}\.[0-9]{2}\.[0-9]{2}"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ОКТМОТип">
+		<xs:annotation>
+			<xs:documentation>Код из Общероссийского классификатора территорий муниципальных образований</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="8"/>
+			<xs:maxLength value="11"/>
+			<xs:pattern value="[0-9]{8}"/>
+			<xs:pattern value="[0-9]{11}"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ОКАТОТип">
+		<xs:annotation>
+			<xs:documentation>Коды из Классификатора объектов административно-территориального деления</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:length value="11"/>
+			<xs:pattern value="[0-9]{11}"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="CCРФТип">
+		<xs:annotation>
+			<xs:documentation>Код из Справочника субъектов Российской Федерации </xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:length value="2"/>
+			<xs:pattern value="[0-9]{2}"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ДатаТип">
+		<xs:annotation>
+			<xs:documentation>Дата в формате ДД.ММ.ГГГГ (01.01.1900 - 31.12.2099)</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:length value="10"/>
+			<xs:pattern value="((((0[1-9]{1}|1[0-9]{1}|2[0-8]{1})\.(0[1-9]{1}|1[0-2]{1}))|((29|30)\.(01|0[3-9]{1}|1[0-2]{1}))|(31\.(01|03|05|07|08|10|12)))\.((19|20)[0-9]{2}))|(29\.02\.((19|20)(((0|2|4|6|8)(0|4|8))|((1|3|5|7|9)(2|6)))))"/>
+		</xs:restriction>
+	</xs:simpleType>
+</xs:schema>

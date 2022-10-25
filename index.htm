@@ -1,0 +1,308 @@
+<!DOCTYPE html> 
+<html>
+<head>
+<title></title>
+<meta charset="utf-8"/>
+<meta name="description" content="" /> 
+<script type="text/javascript" src="TaxChecker.js"></script>
+<script type="text/javascript" src="XPathHelper.js"></script>
+<script type="text/javascript" src="XsdHelper.js"></script>
+<link rel="stylesheet" type="text/css" href="css/stylesheet.css">
+</head>
+
+<body>
+<div class="main_container">
+	<ul class="top_menu">
+		<li><a class="topmenu_active">Проверка</a></li>		
+		<li><a>Список форм</a></li>		
+	</ul>
+
+	<div class="tab_content">
+		<div class="button_container">
+			<label class="file_button" for="file">Выбрать файл</label>	
+			<input type="file" id="file" accept="text/xml"/>
+		 </div>
+		<div class="file_name"></div>
+		<div class="tax_info"></div>	
+		<div class="extra_info display_none">
+			<input type="checkbox"  />Показать дополнительную информацию
+		</div>
+		<table></table>		
+	</div>
+	
+	<div class="tab_content display_none">
+		<div class="chosen_drop chosen_taxdoc">
+			<a>
+				<input placeholder="Выбор формы" />
+			</a>			
+			<ul class="display_none"></ul>	
+		</div>
+		<div class="chosen_drop chosen_versform">
+			<a>
+				<input placeholder="Версия формы" readonly />
+			</a>			
+			<ul class="display_none"></ul>
+		</div>	
+	
+		<div class="input_text input_findelement">
+			<input placeholder="Поиск атрибутов" />
+		</div>
+		
+		<div class="extra_info display_none">
+			<input type="checkbox"  />Показать дополнительную информацию
+		</div>
+		<table></table>
+	</div>	
+</div>
+<a style="position: absolute; right: 0; bottom: 0" href="test.xml" download="test.xml">Тест</a>		
+
+<script>
+// загрузить первоначальный список доступной отчетности
+document.addEventListener("DOMContentLoaded", () =>
+							{
+								var taxList = loadDOM("TaxDocumentList.xml");
+								//спиок отчетности 
+								var taxNames = Array.from(taxList.querySelectorAll("Документ")).map(n => n.getAttribute("КНД") + " - " + n.getAttribute("Наименование"));
+								// фильтр без дубликатов имен (из-за разных версФорм)
+								taxNames = taxNames.filter((item,pos) => taxNames.indexOf(item) == pos);
+								taxNames.forEach(s => 
+													{
+														var ul = document.querySelector(".chosen_taxdoc ul");
+														var li = document.createElement("li");
+														li.textContent = s;	
+														li.onclick = function() // выбор пункта из выпадающего списка
+																				{	
+																					var ul = this.parentElement;
+																					var div = this.parentElement.parentElement;
+																					var input = div.querySelector("a input");
+																					input.value =  this.textContent;																																																		
+																					ul.classList.add("display_none");
+
+																					//Если выбрали отчетность, то заполнить список версФорм
+																					if (div.className.indexOf("chosen_taxdoc") != -1) 
+																					{
+																						// получить доступные версФорм для выбранного отчета
+																						var knd = input.value.split("-")[0].trim();
+																						var taxList = loadDOM("TaxDocumentList.xml");
+																						var versForms = Array.from(taxList.querySelectorAll('Документ[КНД="' + knd + '"]')).map(n => parseFloat(n.getAttribute("ВерсФорм")));	
+																						versForms.sort().reverse();
+																						// заполнить список версий форм
+																						var ul_versform = document.querySelector(".chosen_versform ul");
+																						Array.from(ul_versform.children).forEach(n => n.remove());
+																						versForms.forEach(s => 
+																												{
+																													var li = document.createElement("li");
+																													li.textContent = s;
+																													li.onclick = this.onclick;
+																													ul_versform.appendChild(li);
+																												});																					
+																						document.querySelector(".chosen_versform a input").value = ul_versform.firstChild.innerHTML;
+																					}
+																					
+																					// обновить таблицу с результатами
+																					document.querySelector(".input_findelement input").oninput();																															
+																				}																											
+														ul.appendChild(li);
+													});												
+
+							});	
+
+// закрыть все раскрытые списки, если щелкнуть по свободному месту
+document.body.onmousedown = function (event)
+{
+	var aux = event.target;
+	while (aux)
+	{
+		if (aux.className.indexOf("chosen_drop") != -1) return;
+		aux = aux.parentElement;
+	}
+	document.querySelectorAll(".chosen_drop ul").forEach(ul => ul.classList.add("display_none"));																
+}
+													
+
+// перещелкивание верхнего меню
+document.querySelector(".top_menu").onclick = function(event) 
+							{																
+								if (event.target.tagName != "A") return;
+								var a = event.target;
+								var li = a.parentElement;																	
+								var index = Array.from(this.children).indexOf(li);	
+								//переключить пункт верхнего меню
+								Array.from(this.getElementsByTagName("a")).forEach(a => a.classList.remove("topmenu_active"));			
+								a.classList.add("topmenu_active");
+								//переключить контент под пунктом
+								Array.from(document.getElementsByClassName("tab_content")).forEach(t => t.classList.add("display_none"));																	
+								document.getElementsByClassName("tab_content")[index].classList.remove("display_none");														
+							}
+
+// пользователем выбран файл
+document.getElementById("file").onchange = function ()
+														{											
+															var reader = new FileReader();
+															reader.onload = Start;																
+															reader.readAsText(this.files[0],'windows-1251');   
+														}		
+
+// щелчек на выпадающем списке
+document.querySelectorAll(".chosen_drop").forEach(div => div.onclick = function(event) 
+											{	
+												if (event.target.tagName != "LI")
+													this.querySelector("ul").classList.remove("display_none");																			
+
+											});
+// фильтр выпадающего списка отчетности						
+document.querySelector(".chosen_taxdoc a input").oninput = function ()
+									{																			
+										var ul = document.querySelector(".chosen_taxdoc ul");
+										Array.from(ul.children).forEach(li => 	
+																			{
+																				if (li.innerHTML.toLowerCase().indexOf(this.value.toLowerCase()) != -1)
+																					li.classList.remove("display_none")
+																				else 
+																					li.classList.add("display_none");																														
+																			});
+									}
+// поиск атрибутов					
+document.querySelector(".input_findelement input").oninput = function ()
+									{
+										var knd = document.querySelector(".chosen_taxdoc a input").value.split("-")[0].trim();																			
+										var versForm = document.querySelector(".chosen_versform a input").value;
+										if (!knd || !versForm) return;
+										//поиск нужной xsd
+										var taxList = loadDOM("TaxDocumentList.xml");
+										var xsdFileName = taxList.querySelector('Документ[КНД="' + knd + '"][ВерсФорм="' + versForm + '"]').getAttribute("ИмяФайла");																		
+										var xsdDoc = loadDOM("xsd/" + xsdFileName);
+										var xsdRoot = xsdDoc.querySelector("schema element"); 
+										// поиск аттрибутов
+										var xsdHelper = new XsdHelper((nsPrefix) => {if (nsPrefix == 'xs') return 'http://www.w3.org/2001/XMLSchema'});
+										var xsdFound = xsdHelper.find(this.value, [xsdDoc.querySelector("schema element")]);																			
+
+										document.querySelectorAll(".extra_info")[1].classList.remove("display_none");
+
+										//выводим результат в таблицу
+										var table = document.querySelectorAll("table")[1];
+										table.innerHTML = "<th>№</th><th>Имя</th><th>Тип</th><th>Обязательность</th><th>Описание</th>";	
+
+										for (var i=0; i < xsdFound.length; i++)	
+										{
+											var xsdPath = xsdFound[i];		
+											var xsdNode = xsdPath.pop();	
+											var documentation = xsdHelper.getDocumentation(xsdNode);
+											var xsdNodeName = documentation[0] || documentation[1];
+											var description = "";
+											// Если полное описание
+											if (document.querySelectorAll(".extra_info input")[1].checked)
+											{
+												description = xsdPath.map(n => (xsdHelper.getDocumentation(n)[0] || xsdHelper.getDocumentation(n)[1]) + "(" + n.getAttribute("name") + ")").join(" &rArr; ");
+											}
+											else // Если краткое описание
+											{
+												var part = xsdPath.filter(n => xsdHelper.isPart(n)).pop();
+												xsdPath = xsdPath.slice(xsdPath.indexOf(part));
+												description = xsdPath.map(n => xsdHelper.getDocumentation(n)[0]).filter(s => s != "").join(" &rArr; ");
+											}
+
+											description = (description == "")? xsdNodeName : description + " &rArr; " + xsdNodeName;
+
+											var row = table.insertRow();
+											row.insertCell().innerHTML = i+1; 
+											row.insertCell().innerHTML = xsdNode.getAttribute("name");
+											row.insertCell().innerHTML = (xsdNode.nodeName == "xs:element")? "тег" : "атрибут";
+											row.insertCell().innerHTML = (xsdNode.getAttribute("use") == "required" || xsdNode.getAttribute("min-occurs") >=1 || (!xsdNode.getAttribute("min-occurs") && xsdNode.nodeName == "xs:element")) ? "обязательный" : "необязательный";
+											row.insertCell().innerHTML = description;
+										}																			
+									}
+	
+																		
+// галка "Показать дополнительную информацию" для проверки xml
+document.querySelectorAll(".extra_info")[0].onchange = function ()
+								 {
+									document.getElementById("file").onchange();																
+								 }
+															 
+// галка "Показать дополнительную информацию" для проверки xsd
+document.querySelectorAll(".extra_info")[1].onchange = function ()
+								 {
+									document.querySelector(".input_findelement input").oninput();																
+								 }
+
+function loadDOM(path)
+{
+	var xhr = new XMLHttpRequest();
+	xhr.open("GET", path, false);	
+	xhr.send();	
+	return xhr.responseXML;
+}																
+	
+function Start(fileReadCompleteEvent)
+{
+	// Имя пользовательского xml файла
+	var xmlFileName = document.getElementById('file').files[0].name.split("\\").pop();;
+	document.getElementsByClassName("file_name")[0].innerHTML = xmlFileName;
+	// Парсим пользовательский xml
+	var xmlDoc = new DOMParser().parseFromString(fileReadCompleteEvent.target.result, 'text/xml');
+	if (xmlDoc.getElementsByTagName("parsererror").length>0)
+	{
+		document.getElementsByClassName('tax_info')[0].innerHTML = "Файл не является правильным XML файлом. Возможно файл не в кодировке windows-1251";
+		return;
+	}	
+	
+	// Получить КНД и версию формы и т.д. из файла загруженного пользователем
+	var xPathHelper = new XPathHelper(null);
+	var knd = xPathHelper.getSingleAttributeValue(xmlDoc, "Файл/Документ/@КНД");
+	if (!knd) knd = xPathHelper.getSingleAttributeValue(xmlDoc, 'Файл/Документ/@Индекс');
+	var nomKorr = xPathHelper.getSingleAttributeValue(xmlDoc, 'Файл/Документ/@НомКорр');
+	var year = xPathHelper.getSingleAttributeValue(xmlDoc, 'Файл/Документ/@ОтчетГод');
+	var period = xPathHelper.getSingleAttributeValue(xmlDoc, 'Файл/Документ/@Период');
+	var versForm = xPathHelper.getSingleAttributeValue(xmlDoc, 'Файл/@ВерсФорм');	
+	
+	// Загрузить список доступных отчетов
+	var taxList = loadDOM("TaxDocumentList.xml");
+	// Найти по кнд и версии формы нужный документ
+	var doc = xPathHelper.getSingleNode(taxList, "Документы/Документ[@КНД='" + knd + "' and " + "@ВерсФорм='" + versForm + "']");	
+	if (!doc)
+	{
+		document.getElementsByClassName("tax_info")[0].innerHTML = "Документ с КНД = " + knd + " и версией формы " + versForm + " не поддерживается";
+		return;
+	}
+	
+	// получить наименование отчета
+	var taxName = doc.getAttribute("Наименование");
+	var taxInfo = "Номер корректировки: " + nomKorr + ". Отчетный год: " + year +". Период: " + period + '. Версия формы: ' + versForm; 	
+	document.getElementsByClassName("tax_info")[0].innerHTML = taxName + ". " + taxInfo;
+	
+	//Получить имя файла xsd схемы
+	var xsdDoc = loadDOM("xsd/"+doc.getAttribute("ИмяФайла"));	
+	
+	// Проверка
+	var taxChecker = new TaxChecker(xsdDoc, xmlDoc, xmlFileName);
+	taxChecker.isFullDescription = document.querySelector(".extra_info input").checked;
+	taxChecker.Validate();	
+	
+	// Очищаем таблицу от предыдущих результатов
+	var table = document.querySelector("table");
+	while(table.firstChild) table.removeChild(table.firstChild);
+	document.querySelector(".extra_info").classList.add("display_none");
+	
+	// Если ошибок не найдено
+	if (taxChecker.log.length <= 0)
+	{
+		var row = table.insertRow();
+		row.insertCell().innerHTML = "Ошибок не обнаружено";		
+		return;
+	}
+	
+	//выводим результат в таблицу	
+	document.querySelector(".extra_info").classList.remove("display_none");
+	for (var i=0; i < taxChecker.log.length; i++)	
+	{	
+		var row = table.insertRow();
+		row.insertCell().innerHTML = i+1; 
+		row.insertCell().innerHTML = taxChecker.log[i];
+	}
+}
+</script>
+
+
+</body>
+</html>
